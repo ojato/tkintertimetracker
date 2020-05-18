@@ -1,0 +1,2 @@
+hungry for apples?,yes,no
+red?,red,blue
