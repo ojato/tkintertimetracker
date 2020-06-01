@@ -1,5 +1,5 @@
-# tkintersurveytool
+# tkintertimetracker
 
-simple survey tool built with tkinter to record some data.
+I noticed I wasn't really focused when working on projects at home.
 
-No database, No networking, just a replacement for doing it on paper.
+So I built this simple tracker to track how much I'm actually working on my project.

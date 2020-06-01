@@ -12,16 +12,19 @@ class Question:
 
 
 class myApp:
-    def __init__(self, question_fn=None):
-        self.questions = []
-        self.question_index = 0
+    def __init__(self, ):
+        self.times=[]
         self.root = tkinter.Tk()
         self.MenuBar = tkinter.Menu(self.root)
         self.FileMenu = tkinter.Menu(self.MenuBar, tearoff=0)
         self.MenuBar.add_cascade(label="File", menu=self.FileMenu)
-
-        self.active_var = None
-
+        self.active_stuff = []
+        self.tracking=False
+        
+        w = tkinter.Button(self.root, text="time", command=self.time)
+        w.pack()
+        #self.active_stuff.append(w)
+        
         width = 600
         height = 400
         # center the window
@@ -34,36 +37,38 @@ class myApp:
         self.root.geometry('%dx%d+%d+%d' % (width, height, left, top))
         self.root.config(menu=self.MenuBar)
 
-        self.root.title("Surveytool")
+        self.root.title("timetracker")
         self.FileMenu.add_command(label="Open", command=self.openFile)
-        if question_fn is not None:
-            with open(question_fn, "r") as f:
-                string = f.read()
-            self.load_questions_from_text(string)
-            self.question_index = 0
-            self.load_next_question()
-
+        
+    def time(self):
+        for x in self.active_stuff:
+            x.pack_forget()
+        self.times.append(datetime.datetime.now())
+        #print()
+        
+        self.tracking = not self.tracking
+        w = tkinter.Label(self.root, text="tracking - "+str(self.tracking)+" - since - "+self.times[-1].isoformat())
+        w.pack()
+        self.active_stuff.append(w)
+        #I always start not tracking, so
+        c = 0
+        while c < len(self.times)-1:
+            message = ""
+            
+            tracking_start=self.times[c]
+            c += 1
+            
+            tracking_end=self.times[c]
+            tracking_diff= tracking_end-tracking_start
+            
+            w = tkinter.Label(self.root, text="tracker was on for "+str(tracking_diff)+"\n start "+ tracking_start.isoformat()+"\n end "+tracking_end.isoformat())
+            w.pack()
+            self.active_stuff.append(w)
+            c += 1
+            
+        
     def run(self):
         self.root.mainloop()
-
-    def load_questions_from_text(self, string):
-        """
-        input format is
-        question?,answer,answer,answer
-
-        other is always added at the end automatically.
-        """
-
-        string = string.split("\n")
-        for line in string:
-            if line == '':
-                continue
-            line = line.split(",")
-            if len(line) <= 1:
-                raise TypeError(
-                    "I don't think that's a valid question:" + str(line))
-
-            self.questions.append(Question(line[0], line[1:]))
 
     def openFile(self):
 
@@ -84,90 +89,7 @@ class myApp:
             self.load_questions_from_text(text)
             self.load_next_question()
 
-    def build_question_window(self, question):
-        #zero everything
-        length = len(question.option_list)
-        c = 0
-        var = tkinter.IntVar()
-        self.active_var = var
-        self.active_stuff = []
-        
-        #this is the question
-        w = tkinter.Label(self.root, text=question.question_text)
-        w.pack()
-        self.active_stuff.append(w)
-
-        for option in question.option_list:
-            # radiobutton
-            w = tkinter.Radiobutton(
-                self.root,
-                text=option,
-                variable=var,
-                value=c,
-            )
-            
-            w.pack()
-            self.active_stuff.append(w)
-            c += 1
-        #another one for "other"
-        w = tkinter.Radiobutton(
-            self.root,
-            text="other",
-            variable=var,
-            value=c,
-        )
-        w.pack()
-        self.active_stuff.append(w)
-        
-        
-        w = tkinter.Button(self.root, text="continue", command=self.done)
-        w.pack()
-        self.active_stuff.append(w)
-
-    def done(self):
-        value = self.active_var.get()
-        answer = self.questions[self.question_index].option_list[value]
-        self.questions[self.question_index].selected_answer = answer
-        self.question_index += 1
-        
-        #this deletes the UI elements for the current question
-        for x in self.active_stuff:
-            x.pack_forget()
-        self.load_next_question()
-
-    def load_next_question(self):
-
-        if self.question_index >= len(self.questions):
-            # all done, collect outputs and zero everything
-            self.output_answers()
-            self.questions = []
-            self.active_var = None
-            self.question_index = 0
-            w = tkinter.Label(self.root, text="all done")
-            w.pack()
-            self.active_stuff.append(w)
-            return
-
-        self.build_question_window(self.questions[self.question_index])
-
-    def output_answers(self):
-        """output format is
-        question, given answer
-        
-        obviously only makes sense in connection with the input form
-        """
-        
-        # append it, for easier data collection
-        with open("output.csv", "a") as f:
-            f.write("new entry," + datetime.datetime.now().isoformat() + "\n")
-            for question in self.questions:
-                f.write(
-                    ",".join(
-                        (question.question_text,
-                         question.selected_answer)) +
-                    "\n")
-
 
 if __name__ == "__main__":
-    M = myApp("test_question.txt")
+    M = myApp()
     M.run()
