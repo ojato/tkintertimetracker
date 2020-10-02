@@ -38,6 +38,7 @@ class myApp:
         self.root.config(menu=self.MenuBar)
 
         self.root.title("timetracker")
+        self.root.wm_iconbitmap("Iconsmind-Outline-Stopwatch-2.ico")
         self.FileMenu.add_command(label="Open", command=self.openFile)
         
     def time(self):
